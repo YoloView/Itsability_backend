@@ -14,9 +14,9 @@ var serviceAccount = require("./demoapp-acc5e-firebase-adminsdk-j6hs5-bd2ed0b094
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
-});
-
-let = admin.firestore();
+  });
+  
+let db = admin.firestore();
 
 const express = require('express');
 const app = express();
@@ -24,23 +24,45 @@ const app = express();
 const cors = require('cors')({origin: true});
 app.use(cors);
 
-app.get('/db/data', (req, res) =>{
+app.get('/data', (req, res) => {
+    let dataRef = db.collection('data');
+    let items = new Array();
+    let alldata = dataRef.get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          items.push(doc.id, '=>', doc.data());
+          console.log(doc.id, '=>', doc.data());
+        });
+        return;
+      })
+      .catch(err => {
+        items.push('Error getting documents', err);
+        console.log('Error getting documents', err);
+      });
+      res.header('Content-Type', 'application/json; charset=utf-8');
+      res.send({list: items});
+});
+
+
+/*
+app.get('/db/data', (req, res) => {
     let dataRef = db.collection('data')
     let items = new Array();
     dataRef.get()
+        // eslint-disable-next-line promise/always-return
         .then((snapshot) => {
             snapshot.forEach((doc) => {
                 let message = doc.data();
                 message.id = doc.id;
                 items.push(message);
             });
-            return
         })
         .catch((err) => {
             console.log('Error getting documents', err);
         });
 
-        res.header('Content-Type', 'application/json; charset=utf-8');
+    res.header('Content-Type', 'application/json; charset=utf-8');
+    res.send({list: items});
 })
 
 /*

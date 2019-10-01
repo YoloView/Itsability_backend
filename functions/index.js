@@ -27,27 +27,24 @@ app.use(cors);
 app.get('/data', (req, res) => {
     let dataRef = db.collection('data');
     let items = new Array();
+
     let alldata = dataRef.get()
-      .then(snapshot => {
-        snapshot.forEach(doc => {
-          items.push(doc.id, '=>', doc.data());
-          console.log(doc.id, '=>', doc.data());
-        });
-        return;
-      })
-      .catch(err => {
-        items.push('Error getting documents', err);
-        console.log('Error getting documents', err);
-      });
-      res.header('Content-Type', 'application/json; charset=utf-8');
-      res.send({list: items});
+        .then((snapshot) => {
+            return Promise.all(snapshot.docs.map((doc) => {
+                return items.push(doc.id, '=>', doc.data());
+            }));
+        })
+        .catch((err) => {
+            console.log('Error getting documents', err);
+        })
+        .then(() => {
+            res.header('Content-Type', 'application/json; charset=utf-8');
+            return res.send({list: items});
+        })
 });
 
 
 /*
-app.get('/db/data', (req, res) => {
-    let dataRef = db.collection('data')
-    let items = new Array();
     dataRef.get()
         // eslint-disable-next-line promise/always-return
         .then((snapshot) => {
@@ -56,6 +53,9 @@ app.get('/db/data', (req, res) => {
                 message.id = doc.id;
                 items.push(message);
             });
+app.get('/db/data', (req, res) => {
+    let dataRef = db.collection('data')
+    let items = new Array();
         })
         .catch((err) => {
             console.log('Error getting documents', err);

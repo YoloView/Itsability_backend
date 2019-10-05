@@ -17,6 +17,8 @@ admin.initializeApp({
   });
   
 let db = admin.firestore();
+let storage = admin.storage();
+let storageRef = storage.ref();
 
 const express = require('express');
 const app = express();
@@ -40,6 +42,22 @@ app.get('/data', (req, res) => {
         .then(() => {
             res.header('Content-Type', 'application/json; charset=utf-8');
             return res.send({list: items});
+        })
+});
+
+app.get('/data/image/:cname', (req, res) => {
+    let cname = req.params.cname;
+    let imageRef = storageRef.child('image');
+    let fileRef = imageRef.child(cname+'.jpg');
+
+    fileRef.getDownloadURL()
+        .then(url => {
+            res.header('Content-Type', 'application/json; charset=utf-8');
+            return res.send({link: url});
+        })
+        .catch(err => {
+            res.header('Content-Type', 'application/json; charset=utf-8');
+            return res.send({error: err, errorCode: err.code});
         })
 });
 
